@@ -1,6 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
+console.log('--- Redirects Generator Debug ---');
+console.log('Available Env Keys:', Object.keys(process.env).filter(k => k.startsWith('VITE_') || k === 'NODE_ENV'));
+console.log('VITE_API_URL:', process.env.VITE_API_URL);
+console.log('---------------------------------');
+
 const apiUrl = process.env.VITE_API_URL || '';
 const distDir = path.resolve('dist');
 
