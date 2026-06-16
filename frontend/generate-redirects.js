@@ -4,9 +4,11 @@ import path from 'path';
 console.log('--- Redirects Generator Debug ---');
 console.log('Available Env Keys:', Object.keys(process.env).filter(k => k.startsWith('VITE_') || k === 'NODE_ENV'));
 console.log('VITE_API_URL:', process.env.VITE_API_URL);
+console.log('VITE_URL:', process.env.VITE_URL);
 console.log('---------------------------------');
 
-const apiUrl = process.env.VITE_API_URL || '';
+// Support both VITE_API_URL and VITE_URL for robustness
+const apiUrl = process.env.VITE_API_URL || process.env.VITE_URL || '';
 const distDir = path.resolve('dist');
 
 if (!fs.existsSync(distDir)) {
@@ -19,7 +21,7 @@ if (apiUrl) {
   redirectContent += `/api/* ${apiUrl}/api/:splat 200!\n`;
   console.log(`Configured API redirect to: ${apiUrl}`);
 } else {
-  console.log('Warning: VITE_API_URL is not set. API calls will resolve locally.');
+  console.log('Warning: VITE_API_URL or VITE_URL is not set. API calls will resolve locally.');
 }
 
 // Fallback for Single Page Application routing (React Router)
