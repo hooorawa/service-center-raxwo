@@ -61,8 +61,8 @@ const seedData = async () => {
 
     // Seed Vehicles
     const vehicles = await Vehicle.insertMany([
-      { registrationNumber: 'WP CAB-1234', make: 'Toyota', model: 'Prius', year: 2018, owner: customers[0]._id, chassisNumber: 'CHAS123456', engineNumber: 'ENG123456' },
-      { registrationNumber: 'CP BBD-5678', make: 'Honda', model: 'Civic', year: 2020, owner: customers[1]._id, chassisNumber: 'CHAS789012', engineNumber: 'ENG789012' }
+      { registrationNumber: 'WP CAB-1234', make: 'Toyota', model: 'Prius', year: 2018, owner: customers[0]._id, vin: 'CHAS123456', engineNumber: 'ENG123456' },
+      { registrationNumber: 'CP BBD-5678', make: 'Honda', model: 'Civic', year: 2020, owner: customers[1]._id, vin: 'CHAS789012', engineNumber: 'ENG789012' }
     ]);
 
     // Seed Products (Inventory)

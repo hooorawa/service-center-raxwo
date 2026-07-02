@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 
 const auditLogSchema = mongoose.Schema(
   {
-    adminId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Admin',
+    user: {
+      type: String,
       required: true,
+      default: 'System',
     },
     action: {
       type: String,
@@ -15,12 +15,16 @@ const auditLogSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    details: {
-      type: Object,
+    description: {
+      type: String,
+      required: true,
     },
     ipAddress: {
       type: String,
     },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+    }
   },
   {
     timestamps: true,

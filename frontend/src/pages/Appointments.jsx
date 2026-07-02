@@ -25,13 +25,14 @@ import {
     useUpdateAppointmentMutation,
     useDeleteAppointmentMutation
 } from '../slices/appointmentApiSlice';
-import { useGetCustomersQuery } from '../slices/customerApiSlice';
-import { useGetVehiclesQuery } from '../slices/vehicleApiSlice';
+import { useGetCustomersQuery, useCreateCustomerMutation } from '../slices/customerApiSlice';
+import { useGetVehiclesQuery, useRegisterVehicleMutation } from '../slices/vehicleApiSlice';
 import { useGetEmployeesQuery } from '../slices/hrApiSlice';
 import { useGetServicesCatalogQuery } from '../slices/servicesManagementApiSlice';
 import { useGetProductsQuery } from '../slices/inventoryApiSlice';
 import Modal from '../components/Modal';
 import PaymentModal from '../components/PaymentModal';
+import SearchableSelect from '../components/SearchableSelect';
 
 const Appointments = () => {
     // API Hooks
@@ -45,6 +46,8 @@ const Appointments = () => {
     const [bookAppointment, { isLoading: isCreating }] = useBookAppointmentMutation();
     const [updateAppointment, { isLoading: isUpdating }] = useUpdateAppointmentMutation();
     const [deleteAppointment] = useDeleteAppointmentMutation();
+    const [createCustomer] = useCreateCustomerMutation();
+    const [registerVehicle] = useRegisterVehicleMutation();
 
     // Local State
     const [searchTerm, setSearchTerm] = useState('');
@@ -346,29 +349,43 @@ const Appointments = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Customer</label>
-                                    <select
-                                        required
-                                        className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-3 px-4 text-xs font-bold focus:ring-0 focus:border-primary transition-all"
+                                    <SearchableSelect
+                                        options={customers?.map(c => ({ label: c.name, value: c._id })) || []}
                                         value={formData.customer}
-                                        onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
-                                    >
-                                        <option value="">Select Customer</option>
-                                        {customers?.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, customer: val, vehicle: '' })}
+                                        placeholder="Select Customer"
+                                        quickFormFields={[
+                                            { name: 'name', label: 'Name', required: true, prefillWithSearch: true },
+                                            { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                                            { name: 'email', label: 'Email Address', type: 'email' },
+                                            { name: 'address', label: 'Address', type: 'text' },
+                                        ]}
+                                        onQuickCreate={async (data) => {
+                                            const res = await createCustomer(data).unwrap();
+                                            return { label: res.name, value: res._id };
+                                        }}
+                                        createLabel="Add New Customer"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Vehicle</label>
-                                    <select
-                                        required
-                                        className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-3 px-4 text-xs font-bold focus:ring-0 focus:border-primary transition-all"
+                                    <SearchableSelect
+                                        options={vehicles?.filter(v => v.owner?._id === formData.customer || v.owner === formData.customer).map(v => ({ label: `${v.registrationNumber} (${v.model})`, value: v._id })) || []}
                                         value={formData.vehicle}
-                                        onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
-                                    >
-                                        <option value="">Select Vehicle</option>
-                                        {vehicles?.filter(v => v.owner?._id === formData.customer || v.owner === formData.customer).map(v => (
-                                            <option key={v._id} value={v._id}>{v.registrationNumber} ({v.model})</option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, vehicle: val })}
+                                        placeholder="Select Vehicle"
+                                        quickFormFields={[
+                                            { name: 'registrationNumber', label: 'Registration Number', required: true, prefillWithSearch: true },
+                                            { name: 'make', label: 'Make (e.g. Toyota)', required: true },
+                                            { name: 'model', label: 'Model (e.g. Prius)', required: true },
+                                            { name: 'owner', label: 'Owner (Customer)', type: 'select', required: true, options: customers?.map(c => ({ label: c.name, value: c._id })) || [] },
+                                        ]}
+                                        onQuickCreate={async (data) => {
+                                            const res = await registerVehicle(data).unwrap();
+                                            return { label: `${res.registrationNumber} (${res.make} ${res.model})`, value: res._id };
+                                        }}
+                                        createLabel="Add New Vehicle"
+                                    />
                                 </div>
                             </div>
 

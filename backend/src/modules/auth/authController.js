@@ -79,12 +79,20 @@ const forgotPassword = asyncHandler(async (req, res) => {
   };
 
   try {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`\n========================================\n[DEV ONLY] Admin Password Reset OTP for ${email} is: ${otp}\n========================================\n`);
+    }
     await transporter.sendMail(mailOptions);
     res.json({ message: 'OTP sent to email' });
   } catch (error) {
-    console.error(error);
-    res.status(500);
-    throw new Error('Email could not be sent');
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEV ONLY] Email sending failed, but letting user proceed in dev. OTP is logged above.`);
+      res.json({ message: 'OTP sent to email (Dev Mode Bypass)' });
+    } else {
+      console.error(error);
+      res.status(500);
+      throw new Error('Email could not be sent');
+    }
   }
 });
 

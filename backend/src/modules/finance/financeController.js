@@ -66,6 +66,18 @@ const generateInvoice = asyncHandler(async (req, res) => {
       finalAmount 
     });
     
+    // Automatically deduct spare parts stock from inventory
+    if (items && items.length > 0) {
+      const Product = require('../../models/productModel');
+      for (const item of items) {
+        if (item.product && item.quantity > 0) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { stockLevel: -Number(item.quantity) }
+          });
+        }
+      }
+    }
+
     if (jobCard) {
       await JobCard.findByIdAndUpdate(jobCard, { status: 'Ready' });
     }

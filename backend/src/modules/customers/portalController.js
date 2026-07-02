@@ -37,11 +37,19 @@ const sendCustomerOTP = asyncHandler(async (req, res) => {
   };
 
   try {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`\n========================================\n[DEV ONLY] Customer OTP for ${email} is: ${otp}\n========================================\n`);
+    }
     await transporter.sendMail(mailOptions);
     res.json({ message: 'OTP sent successfully' });
   } catch (error) {
-    res.status(500);
-    throw new Error('Email delivery failed');
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEV ONLY] Email sending failed, but letting user proceed in dev. OTP is logged above.`);
+      res.json({ message: 'OTP sent successfully (Dev Mode Bypass)' });
+    } else {
+      res.status(500);
+      throw new Error('Email delivery failed');
+    }
   }
 });
 

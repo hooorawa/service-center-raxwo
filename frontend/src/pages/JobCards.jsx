@@ -17,8 +17,8 @@ import {
     useUpdateJobCardMutation,
     useDeleteJobCardMutation
 } from '../slices/jobCardApiSlice';
-import { useGetCustomersQuery } from '../slices/customerApiSlice';
-import { useGetVehiclesQuery } from '../slices/vehicleApiSlice';
+import { useGetCustomersQuery, useCreateCustomerMutation } from '../slices/customerApiSlice';
+import { useGetVehiclesQuery, useRegisterVehicleMutation } from '../slices/vehicleApiSlice';
 import { useGetEmployeesQuery } from '../slices/hrApiSlice';
 import Modal from '../components/Modal';
 import DynamicForm from '../components/DynamicForm';
@@ -35,6 +35,8 @@ const JobCards = () => {
     const [createJobCard, { isLoading: isCreating }] = useCreateJobCardMutation();
     const [updateJobCard, { isLoading: isUpdating }] = useUpdateJobCardMutation();
     const [deleteJobCard] = useDeleteJobCardMutation();
+    const [createCustomer] = useCreateCustomerMutation();
+    const [registerVehicle] = useRegisterVehicleMutation();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,14 +53,36 @@ const JobCards = () => {
             label: 'Customer',
             type: 'select',
             required: true,
-            options: customers?.map(c => ({ label: c.name, value: c._id })) || []
+            options: customers?.map(c => ({ label: c.name, value: c._id })) || [],
+            createLabel: 'Add New Customer',
+            quickFormFields: [
+                { name: 'name', label: 'Name', required: true, prefillWithSearch: true },
+                { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                { name: 'email', label: 'Email Address', type: 'email' },
+                { name: 'address', label: 'Address', type: 'text' },
+            ],
+            onQuickCreate: async (formData) => {
+                const res = await createCustomer(formData).unwrap();
+                return { label: res.name, value: res._id };
+            }
         },
         {
             name: 'vehicle',
             label: 'Vehicle',
             type: 'select',
             required: true,
-            options: vehicles?.map(v => ({ label: `${v.registrationNumber} (${v.make} ${v.model})`, value: v._id })) || []
+            options: vehicles?.map(v => ({ label: `${v.registrationNumber} (${v.make} ${v.model})`, value: v._id })) || [],
+            createLabel: 'Add New Vehicle',
+            quickFormFields: [
+                { name: 'registrationNumber', label: 'Registration Number', required: true, prefillWithSearch: true },
+                { name: 'make', label: 'Make (e.g. Toyota)', required: true },
+                { name: 'model', label: 'Model (e.g. Prius)', required: true },
+                { name: 'owner', label: 'Owner (Customer)', type: 'select', required: true, options: customers?.map(c => ({ label: c.name, value: c._id })) || [] },
+            ],
+            onQuickCreate: async (formData) => {
+                const res = await registerVehicle(formData).unwrap();
+                return { label: `${res.registrationNumber} (${res.make} ${res.model})`, value: res._id };
+            }
         },
         {
             name: 'technician',
@@ -103,8 +127,8 @@ const JobCards = () => {
     ];
 
     const filteredJobCards = jobCards?.filter(j =>
-        j.vehicle?.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        j.customer?.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (j.vehicle?.registrationNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (j.customer?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleOpenModal = (jobCard = null) => {
@@ -218,7 +242,9 @@ const JobCards = () => {
                                     <span className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 mb-1">Due Date</span>
                                     <div className="flex items-center text-slate-700 dark:text-slate-300">
                                         <Timer className="h-4 w-4 mr-2 text-slate-400 dark:text-slate-600" />
-                                        <span className="text-xs font-bold">{format(new Date(jobCard.estimatedCompletion), 'MMM dd, HH:mm')}</span>
+                                        <span className="text-xs font-bold">
+                                            {jobCard.estimatedCompletion ? format(new Date(jobCard.estimatedCompletion), 'MMM dd, HH:mm') : 'N/A'}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">

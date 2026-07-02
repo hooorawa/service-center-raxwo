@@ -30,6 +30,7 @@ const {
 const {
   refundPayment,
   generatePaymentLink,
+  simulatePaymentWebhook
 } = require('./paymentExtensionController');
 const { protect } = require('../../middleware/authMiddleware');
 
@@ -57,6 +58,7 @@ router.post('/payments/:id/refund', protect, refundPayment);
 
 router.post('/payments/:id/refund', protect, refundPayment);
 router.post('/invoices/:id/payment-link', protect, generatePaymentLink);
+router.post('/payments/simulate-webhook/:invoiceNumber', simulatePaymentWebhook);
 
 
 module.exports = router;

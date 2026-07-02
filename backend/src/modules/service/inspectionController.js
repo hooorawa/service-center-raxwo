@@ -34,7 +34,7 @@ const upsertInspection = asyncHandler(async (req, res) => {
     });
     
     // Link to JobCard
-    await JobCard.findByIdAndUpdate(jobCard, { inspectionResults: inspection._id });
+    await JobCard.findByIdAndUpdate(jobCard, { digitalInspection: inspection._id });
   }
 
   res.status(201).json(inspection);

@@ -65,7 +65,55 @@ const generatePaymentLink = asyncHandler(async (req, res) => {
   res.json({ paymentLink: mockLink });
 });
 
+// @desc    Simulate Stripe Webhook (Successful payment)
+// @route   POST /api/finance/payments/simulate-webhook/:invoiceNumber
+// @access  Public
+const simulatePaymentWebhook = asyncHandler(async (req, res) => {
+  const { invoiceNumber } = req.params;
+  const invoice = await Invoice.findOne({ invoiceNumber });
+
+  if (!invoice) {
+    res.status(404);
+    throw new Error('Invoice not found');
+  }
+
+  if (invoice.paymentStatus === 'Paid') {
+    return res.json({ message: 'Invoice already paid', invoice });
+  }
+
+  const amountToPay = invoice.finalAmount - invoice.paidAmount;
+
+  // Create payment record
+  const payment = await Payment.create({
+    invoice: invoice._id,
+    amount: amountToPay,
+    paymentDate: new Date(),
+    paymentMethod: 'Card',
+    transactionId: `TXN-STRIPE-${Date.now()}`,
+    notes: 'Simulated Stripe Payment Webhook'
+  });
+
+  // Update Invoice
+  invoice.paidAmount = invoice.finalAmount;
+  invoice.paymentStatus = 'Paid';
+  await invoice.save();
+
+  // Create financial transaction record
+  await FinancialTransaction.create({
+    type: 'Income',
+    category: 'Sales',
+    amount: amountToPay,
+    paymentMethod: 'Card',
+    referenceModel: 'Payment',
+    referenceId: payment._id,
+    description: `Stripe online payment for invoice ${invoice.invoiceNumber}`
+  });
+
+  res.json({ message: 'Payment simulated successfully', invoice, payment });
+});
+
 module.exports = {
   refundPayment,
   generatePaymentLink,
+  simulatePaymentWebhook
 };

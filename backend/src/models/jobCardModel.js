@@ -55,7 +55,7 @@ const jobCardSchema = mongoose.Schema(
     estimatedCompletion: {
       type: Date,
     },
-    inspectionResults: {
+    digitalInspection: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Inspection',
     },

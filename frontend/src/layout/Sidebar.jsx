@@ -19,7 +19,8 @@ import {
     Calculator,
     Building2,
     MessageSquare,
-    Coins
+    Coins,
+    LayoutGrid
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -48,6 +49,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             title: 'Service Operations',
             items: [
                 { name: 'Job Cards', icon: Wrench, path: '/job-cards' },
+                { name: 'Visual Bay Scheduler', icon: LayoutGrid, path: '/scheduler' },
                 { name: 'Workshop Queue', icon: LayoutDashboard, path: '/workshop-queue' },
                 { name: 'Services', icon: Wrench, path: '/services' },
 

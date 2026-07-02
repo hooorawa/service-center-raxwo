@@ -10,6 +10,7 @@ import {
     Info
 } from 'lucide-react';
 import { useGetInspectionByJobCardQuery, useUpsertInspectionMutation } from '../slices/serviceApiSlice';
+import SignatureCanvas from './SignatureCanvas';
 
 const InspectionItem = ({ item, onUpdate }) => {
     const statusStyles = {
@@ -70,10 +71,22 @@ const InspectionReport = ({ jobCardId, onClose }) => {
     };
 
     const [formState, setFormState] = useState(defaultItems);
+    const [overallSummary, setOverallSummary] = useState('');
+    const [technicianSignature, setTechnicianSignature] = useState('');
+    const [customerSignature, setCustomerSignature] = useState('');
 
     useEffect(() => {
         if (existingInspection?.categories) {
             setFormState(existingInspection.categories);
+        }
+        if (existingInspection?.overallSummary) {
+            setOverallSummary(existingInspection.overallSummary);
+        }
+        if (existingInspection?.technicianSignature) {
+            setTechnicianSignature(existingInspection.technicianSignature);
+        }
+        if (existingInspection?.customerSignature) {
+            setCustomerSignature(existingInspection.customerSignature);
         }
     }, [existingInspection]);
 
@@ -88,7 +101,10 @@ const InspectionReport = ({ jobCardId, onClose }) => {
         try {
             await upsertInspection({
                 jobCard: jobCardId,
-                categories: formState
+                categories: formState,
+                overallSummary,
+                technicianSignature,
+                customerSignature
             }).unwrap();
             alert('Digital Inspection Saved Successfully');
         } catch (err) {
@@ -138,12 +154,33 @@ const InspectionReport = ({ jobCardId, onClose }) => {
                 ))}
             </div>
 
-            <div className="mt-12 p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Technician Summary & Recommendations</h4>
-                <textarea
-                    className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-primary h-32"
-                    placeholder="Enter overall workshop recommendations for this vehicle..."
-                />
+            <div className="mt-12 p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-6">
+                <div>
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Technician Summary & Recommendations</h4>
+                    <textarea
+                        className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-primary h-32"
+                        placeholder="Enter overall workshop recommendations for this vehicle..."
+                        value={overallSummary}
+                        onChange={(e) => setOverallSummary(e.target.value)}
+                    />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Technician Signature</h4>
+                        <SignatureCanvas 
+                            onSave={(sig) => setTechnicianSignature(sig)}
+                            initialImage={technicianSignature}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Customer Signature/Approval</h4>
+                        <SignatureCanvas 
+                            onSave={(sig) => setCustomerSignature(sig)}
+                            initialImage={customerSignature}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );

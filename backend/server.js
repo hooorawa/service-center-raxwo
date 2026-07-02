@@ -39,6 +39,8 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+const { auditMiddleware } = require('./src/middleware/auditMiddleware');
+app.use(auditMiddleware);
 const allowedOrigins = [
   'http://localhost:5173',
   process.env.FRONTEND_URL
@@ -79,7 +81,7 @@ app.use('/api/inventory/warehouses', require('./src/modules/inventory/warehouseR
 
 // Scheduled Jobs
 const cron = require('node-cron');
-const { checkLowStockAndNotify, sendAppointmentReminders } = require('./src/modules/notifications/notificationService');
+const { checkLowStockAndNotify, sendAppointmentReminders, checkPredictiveMaintenance } = require('./src/modules/notifications/notificationService');
 
 // Daily low stock check at 9 AM
 cron.schedule('0 9 * * *', () => {
@@ -89,6 +91,11 @@ cron.schedule('0 9 * * *', () => {
 // Daily appointment reminders at 8 AM
 cron.schedule('0 8 * * *', () => {
   sendAppointmentReminders();
+});
+
+// Daily predictive service recalls at 10 AM
+cron.schedule('0 10 * * *', () => {
+  checkPredictiveMaintenance();
 });
 
 app.get('/', (req, res) => {

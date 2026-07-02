@@ -1,10 +1,15 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import SearchableSelect from './SearchableSelect';
 
 const DynamicForm = ({ schema, onSubmit, initialData = {}, loading = false }) => {
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
         defaultValues: initialData
     });
+
+    React.useEffect(() => {
+        reset(initialData);
+    }, [initialData, reset]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -16,15 +21,21 @@ const DynamicForm = ({ schema, onSubmit, initialData = {}, loading = false }) =>
                         </label>
 
                         {field.type === 'select' ? (
-                            <select
-                                {...register(field.name, { required: field.required })}
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            >
-                                <option value="">Select {field.label}</option>
-                                {field.options.map(opt => (
-                                    <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900">{opt.label}</option>
-                                ))}
-                            </select>
+                            <Controller
+                                name={field.name}
+                                control={control}
+                                rules={{ required: field.required }}
+                                render={({ field: { onChange, value } }) => (
+                                    <SearchableSelect
+                                        options={field.options}
+                                        value={value}
+                                        onChange={onChange}
+                                        placeholder={`Select ${field.label}`}
+                                        onCreate={field.onCreate}
+                                        createLabel={field.createLabel || `+ Add new ${field.label.toLowerCase()}`}
+                                    />
+                                )}
+                            />
                         ) : field.type === 'textarea' ? (
                             <textarea
                                 {...register(field.name, { required: field.required })}

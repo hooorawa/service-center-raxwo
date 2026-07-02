@@ -26,8 +26,8 @@ import {
     useGeneratePaymentLinkMutation
 } from '../slices/financeApiSlice';
 
-import { useGetCustomersQuery } from '../slices/customerApiSlice';
-import { useGetVehiclesQuery } from '../slices/vehicleApiSlice';
+import { useGetCustomersQuery, useCreateCustomerMutation } from '../slices/customerApiSlice';
+import { useGetVehiclesQuery, useRegisterVehicleMutation } from '../slices/vehicleApiSlice';
 import { useGetJobCardsQuery } from '../slices/jobCardApiSlice';
 import Modal from '../components/Modal';
 import DynamicForm from '../components/DynamicForm';
@@ -43,6 +43,8 @@ const Invoices = () => {
     const [deleteInvoice] = useDeleteInvoiceMutation();
     const [sendEmail] = useSendInvoiceEmailMutation();
     const [sendSMS] = useSendInvoiceSMSMutation();
+    const [createCustomer] = useCreateCustomerMutation();
+    const [registerVehicle] = useRegisterVehicleMutation();
     const [generateLink, { isLoading: isGeneratingLink }] = useGeneratePaymentLinkMutation();
 
 
@@ -55,14 +57,36 @@ const Invoices = () => {
             label: 'Customer',
             type: 'select',
             required: true,
-            options: customers?.map(c => ({ label: c.name, value: c._id })) || []
+            options: customers?.map(c => ({ label: c.name, value: c._id })) || [],
+            createLabel: 'Add New Customer',
+            quickFormFields: [
+                { name: 'name', label: 'Name', required: true, prefillWithSearch: true },
+                { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                { name: 'email', label: 'Email Address', type: 'email' },
+                { name: 'address', label: 'Address', type: 'text' },
+            ],
+            onQuickCreate: async (formData) => {
+                const res = await createCustomer(formData).unwrap();
+                return { label: res.name, value: res._id };
+            }
         },
         {
             name: 'vehicle',
             label: 'Vehicle',
             type: 'select',
             required: true,
-            options: vehicles?.map(v => ({ label: v.registrationNumber, value: v._id })) || []
+            options: vehicles?.map(v => ({ label: v.registrationNumber, value: v._id })) || [],
+            createLabel: 'Add New Vehicle',
+            quickFormFields: [
+                { name: 'registrationNumber', label: 'Registration Number', required: true, prefillWithSearch: true },
+                { name: 'make', label: 'Make (e.g. Toyota)', required: true },
+                { name: 'model', label: 'Model (e.g. Prius)', required: true },
+                { name: 'owner', label: 'Owner (Customer)', type: 'select', required: true, options: customers?.map(c => ({ label: c.name, value: c._id })) || [] },
+            ],
+            onQuickCreate: async (formData) => {
+                const res = await registerVehicle(formData).unwrap();
+                return { label: `${res.registrationNumber} (${res.make} ${res.model})`, value: res._id };
+            }
         },
         {
             name: 'jobCard',

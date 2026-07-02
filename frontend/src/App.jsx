@@ -10,6 +10,8 @@ import Customers from './pages/Customers';
 import Vehicles from './pages/Vehicles';
 import Appointments from './pages/Appointments';
 import JobCards from './pages/JobCards';
+import Scheduler from './pages/Scheduler';
+import LobbyTV from './pages/LobbyTV';
 import Inventory from './pages/Inventory';
 import Employees from './pages/Employees';
 import Invoices from './pages/Invoices';
@@ -91,6 +93,7 @@ const App = () => {
                             <Route path="appointments" element={<Appointments />} />
                             {/* Service Operations */}
                             <Route path="job-cards" element={<JobCards />} />
+                            <Route path="scheduler" element={<Scheduler />} />
                             <Route path="workshop-queue" element={<WorkshopQueue />} />
                             <Route path="repairs" element={<Repairs />} />
 
@@ -127,6 +130,7 @@ const App = () => {
                     {/* Customer Portal Routes */}
                     <Route path="/portal/login" element={<PortalLogin />} />
                     <Route path="/portal/dashboard" element={<PortalDashboard />} />
+                    <Route path="/lobby-tv" element={<LobbyTV />} />
 
                     {/* Catch-all: redirect unknown routes to login */}
                     <Route path="*" element={<Navigate to="/login" replace />} />

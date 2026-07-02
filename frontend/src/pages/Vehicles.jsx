@@ -9,6 +9,7 @@ import {
     Calendar,
     Hash,
     Truck,
+    History,
 } from 'lucide-react';
 import {
     useGetVehiclesQuery,
@@ -19,6 +20,7 @@ import {
 import { useGetCustomersQuery } from '../slices/customerApiSlice';
 import Modal from '../components/Modal';
 import DynamicForm from '../components/DynamicForm';
+import ServiceTimeline from '../components/ServiceTimeline';
 
 const Vehicles = () => {
     const { data: vehicles, isLoading } = useGetVehiclesQuery();
@@ -30,6 +32,8 @@ const Vehicles = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState(null);
+    const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+    const [activeTimelineVehicleId, setActiveTimelineVehicleId] = useState(null);
 
     const vehicleSchema = [
         {
@@ -168,6 +172,13 @@ const Vehicles = () => {
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex items-center justify-end space-x-2">
                                                 <button
+                                                    onClick={() => { setActiveTimelineVehicleId(vehicle._id); setIsTimelineOpen(true); }}
+                                                    className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary transition-all shadow-none hover:shadow-sm"
+                                                    title="View Service History"
+                                                >
+                                                    <History className="h-4 w-4" />
+                                                </button>
+                                                <button
                                                     onClick={() => handleOpenModal(vehicle)}
                                                     className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary transition-all shadow-none hover:shadow-sm"
                                                 >
@@ -204,6 +215,16 @@ const Vehicles = () => {
                     initialData={editingVehicle}
                     loading={isCreating || isUpdating}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isTimelineOpen}
+                onClose={() => setIsTimelineOpen(false)}
+                title="Vehicle Service History Timeline"
+            >
+                {activeTimelineVehicleId && (
+                    <ServiceTimeline vehicleId={activeTimelineVehicleId} />
+                )}
             </Modal>
         </div>
     );
